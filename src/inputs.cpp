@@ -484,7 +484,7 @@ void NgxProbeTick(){
   if(o_NgxCreateFeature) DetourAttach(&(PVOID&)o_NgxCreateFeature,(PVOID)h_NgxCreateFeature);
   LONG rc=DetourTransactionCommit();
   g_hooked=(rc==NO_ERROR);
-  Log("NGX hooks: module=%S commit=%ld eval=%p create=%p getters=%p/%p/%p",
+  Log("NGX hooks: module=%ls commit=%ld eval=%p create=%p getters=%p/%p/%p",
       foundName?foundName:L"?",rc,(void*)o_NgxEvaluate,(void*)o_NgxCreateFeature,
       (void*)p_GetVoidPointer,(void*)p_GetF,(void*)p_GetUI);
 }

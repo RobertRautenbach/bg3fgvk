@@ -42,17 +42,21 @@ static PFun_slDLSSGGetState* p_slDLSSGGetState{};
 // first release build resolved the proxy functions through a plain LoadLibraryA("sl.interposer.dll")
 // before this ran, found nothing next to bg3.exe, and the game failed to create its instance.
 static wchar_t s_slDir[MAX_PATH]{};
+// %ls, not %s or %S, for every wide argument below. MSVC's wide printf treats %s as
+// wchar_t*; ISO C -- and so mingw -- treats it as char*, which silently produced a
+// garbage path here and sent the whole lookup down the "next to bg3.exe" fallback.
+// %ls means wide in both.
 static HMODULE LoadInterposer(){
   if(g_sl) return g_sl;
   g_sl = GetModuleHandleA("sl.interposer.dll");
   if(g_sl){ Log("sl.interposer already loaded by someone else (%p) - reusing it", (void*)g_sl); return g_sl; }
   HMODULE self{}; GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS|GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,(LPCWSTR)&LoadInterposer,&self);
   wchar_t dir[MAX_PATH]{}; GetModuleFileNameW(self, dir, MAX_PATH); wchar_t* s=wcsrchr(dir,L'\\'); if(s) *(s+1)=0;
-  wchar_t interposer[MAX_PATH]; swprintf(interposer, MAX_PATH, L"%sStreamline\\sl.interposer.dll", dir);
+  wchar_t interposer[MAX_PATH]; swprintf(interposer, MAX_PATH, L"%lsStreamline\\sl.interposer.dll", dir);
   if(GetFileAttributesW(interposer)!=INVALID_FILE_ATTRIBUTES){
-    swprintf(s_slDir, MAX_PATH, L"%sStreamline", dir);
+    swprintf(s_slDir, MAX_PATH, L"%lsStreamline", dir);
     g_sl = LoadLibraryW(interposer);
-    Log("Streamline runtime: %S (%s)", s_slDir, g_sl?"loaded":"LOAD FAILED");
+    Log("Streamline runtime: %ls (%s)", s_slDir, g_sl?"loaded":"LOAD FAILED");
   }
   if(!g_sl){ s_slDir[0]=0; g_sl = LoadLibraryA("sl.interposer.dll"); Log("Streamline runtime: next to bg3.exe (%s)", g_sl?"loaded":"NOT FOUND"); }
   return g_sl;
@@ -112,7 +116,7 @@ static bool EnsureSlInit(){
   // starts, and there is nothing for frame generation to attach to (12:30 run).
   static const wchar_t* s_pluginPaths[2];
   if(s_slDir[0]){ s_pluginPaths[0] = s_slDir; s_pluginPaths[1] = s_logDir; p.pathsToPlugins = s_pluginPaths; p.numPathsToPlugins = 2;
-    Log("Streamline plugin path: %S ; NGX also searches %S", s_slDir, s_logDir); }
+    Log("Streamline plugin path: %ls ; NGX also searches %ls", s_slDir, s_logDir); }
 
   sl::Result r = p_slInit(p, sl::kSDKVersion);
   Log("slInit -> %d", (int)r);
