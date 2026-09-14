@@ -17,6 +17,7 @@
 #include <sl_pcl.h>
 #include <sl_reflex.h>
 #include <cstring>
+#include <cmath>   // tanf; MSVC pulls this in transitively, GCC does not
 #include <atomic>
 #include <mutex>
 

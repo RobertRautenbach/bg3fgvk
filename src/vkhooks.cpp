@@ -8,6 +8,11 @@
 #include <windows.h>
 #include <detours.h>
 #include <intrin.h>
+#if defined(__GNUC__) && !defined(_MSC_VER)
+// mingw's intrin.h declares _ReturnAddress but ships no implementation, so it fails
+// only at link time. The compiler builtin is the same thing.
+#define _ReturnAddress() __builtin_return_address(0)
+#endif
 #include <cstring>
 #include <cstdio>
 #include <atomic>
